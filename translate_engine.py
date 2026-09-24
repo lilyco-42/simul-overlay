@@ -18,10 +18,41 @@ import re
 import threading
 import urllib.request
 
-from argostranslate import package, translate as argos
+from argostranslate import package, settings, translate as argos
 
 _lock = threading.Lock()
 _pairs = None  # set[(from,to)] 已安装语对缓存
+
+_UA = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"}
+
+
+def _download_pkg(pkg):
+    """带浏览器 UA 下载语对包（绕坑专用）。
+
+    argos-net.com 对 Python 默认 UA 返回 403，Argos 内置 pkg.download()
+    随后回落 ipfs:// 链接无限挂起。这里只走 https 链接 + 浏览器 UA + 超时。
+    """
+    fname = f"translate-{pkg.from_code}_{pkg.to_code}-{pkg.package_version}.argosmodel"
+    dest = settings.downloads_dir / fname
+    dest.parent.mkdir(parents=True, exist_ok=True)
+    if dest.exists() and dest.stat().st_size > 0:
+        return str(dest)
+    errs = []
+    for url in [u for u in pkg.links if u.startswith("http")]:
+        try:
+            req = urllib.request.Request(url, headers=_UA)
+            tmp = dest.with_suffix(".part")
+            with urllib.request.urlopen(req, timeout=120) as r, open(tmp, "wb") as f:
+                while True:
+                    chunk = r.read(1 << 20)
+                    if not chunk:
+                        break
+                    f.write(chunk)
+            tmp.replace(dest)
+            return str(dest)
+        except Exception as e:  # 尝试下一条 https 链接
+            errs.append(f"{url}: {e}")
+    raise RuntimeError("语对包下载失败: " + "; ".join(errs))
 
 
 def installed_pairs():
@@ -42,11 +73,17 @@ def ensure_pair(src, dst):
         return True
     pkg = available_pairs().get((src, dst))
     if pkg is None:
+        try:  # 本地索引可能过期 → 刷新一次再查
+            package.update_package_index()
+        except Exception:
+            pass
+        pkg = available_pairs().get((src, dst))
+    if pkg is None:
         return False
     with _lock:
         if (src, dst) in installed_pairs():  # 双检，防并发重复装
             return True
-        path = pkg.download()
+        path = _download_pkg(pkg)
         package.install_from_path(path)
         installed_pairs().add((src, dst))
     return True
