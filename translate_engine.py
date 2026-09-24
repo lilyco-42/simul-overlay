@@ -25,6 +25,18 @@ _pairs = None  # set[(from,to)] 已安装语对缓存
 
 _UA = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"}
 
+# NMT 退化重复（如 "Good morning" → "早,早,早…"）：片段(≤12字,无句读) + 分隔(句读/空白) + 同片段 ≥1 次
+_REPEAT = re.compile(r"([^\s,，。！？；;.!?]{1,12})(?:[,，。！？；;.!\s]+\1){1,}")
+
+
+def _collapse_repeats(s):
+    """清洗翻译输出的机械重复（逗号/句号/空白分隔的完全相同片段）。"""
+    prev = None
+    while prev != s:
+        prev = s
+        s = _REPEAT.sub(r"\1", s)
+    return s.strip()
+
 
 def _download_pkg(pkg):
     """带浏览器 UA 下载语对包（绕坑专用）。
@@ -179,10 +191,10 @@ def translate(text, src=None, dst=None):
         try:
             out = api_translate(text, src, dst)
             if out:
-                return out
+                return _collapse_repeats(out)
         except Exception:
             pass  # API 不可用 → 回落离线，字幕永不阻塞
     out = offline_translate(text, src, dst)
     if out is not None:
-        return out
+        return _collapse_repeats(out)
     return f"[本地缺语对 {src}→{dst}，可设置 SIMUL_API_* 或重跑以自动装包]"

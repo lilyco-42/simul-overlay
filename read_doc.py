@@ -57,6 +57,7 @@ def main():
             except Exception as e:
                 t = f"[翻译失败: {e}]"
             f.write(f"{p}\n{t}\n\n")
+            print(f"{p}\n→{t}\n", flush=True)  # 流式推给 Tauri 壳（[read] 之外的字幕行）
             if i % 10 == 0 or i == n:
                 print(f"[read] {i}/{n}", flush=True)
     print(f"[read] 完成 → {out_path}", flush=True)

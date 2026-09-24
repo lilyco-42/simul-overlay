@@ -10,10 +10,10 @@
 ## 硬性需求（用户原始需求，全要）
 
 - [x] 实时语音翻译字幕（麦克风 → ASR → 翻译 → 双语悬浮字幕）
-- [ ] 屏幕文字 / OCR 翻译（游戏文本、小说、网页）
-- [ ] 反向语音输出（TTS 朗读译文）
-- [ ] 整篇阅读模式 + 结果可复制 / 导出
-- [ ] 全平台（架构目标跨平台；Windows 先行，macOS/Linux 跟进）
+- [x] 屏幕文字 / OCR 翻译（游戏文本、小说、网页）（2026-09-24：全屏/区域/拖拽圈选/图片四模式实测，默认出中文）
+- [x] 反向语音输出（TTS 朗读译文）（2026-09-24：合成+播放实测，用户亲耳确认）
+- [x] 整篇阅读模式 + 结果可复制 / 导出（2026-09-24：read_doc 双语对照 + txt/srt atexit 落盘）
+- [ ] 🔄 全平台（架构目标跨平台；Windows 先行，macOS/Linux 跟进）——2026-09-24 三平台 CI 全绿（nsis/dmg/deb/AppImage 产物全出），本地验证与 M6 安卓待续
 - [x] **本地翻译为显性目标**：离线为主，API（`SIMUL_API_*`）仅可选
 - [x] GitHub Actions 构建 + **tag 自动上传 Release**
 
@@ -44,7 +44,7 @@
 - [x] **22 个语对包安装完成 + pivot 路由实测**（2026-09-24：24 对装机；zh→ja/ko→zh/de→fr/ru→zh 两跳与 ar→en 直连全通过）
 - [x] **WASAPI loopback 系统声音捕获**（`demo_system.py`，实测通过 2026-09-24：48k 立体声 loopback → 16k 单声道 → 全管线字幕输出）
 - [ ] 麦克风实测（⚠️ Blocked：等用户检查系统麦克风权限后跑 `demo_mic.py 60`）
-- [ ] 多音源选择 UI（麦克风 / 系统声音 / 指定应用）
+- [ ] 🔄 多音源选择 UI（麦克风 / 系统声音已进壳，指定应用待做）——2026-09-24 四合一控制条代码完成，待实跑验证
 
 #### M1 途中修复的坑（2026-09-24）
 - [x] Argos 语对下载 403：argos-net.com 拒 Python 默认 UA → 浏览器 UA + 只走 https（ipfs 回落会无限挂起）
@@ -52,23 +52,23 @@
 
 ### M2 — 输出面补全
 - [x] **TTS 朗读译文**（`tts_engine.py`，sherpa-onnx OfflineTts + Kokoro multi-lang v1.0，310MB/24kHz，en/zh/ja/es/fr/it/pt 七语种；2026-09-24 英中双句实测合成+播放通过，其余语种英文音色兜底）
-- [ ] TTS 接入字幕管线（每条译文可选朗读）
+- [x] **TTS 接入字幕管线（每条译文可选朗读）**（2026-09-24：`SIMUL_TTS=1` emit 队列后台朗读实测，用户确认听到；壳内开关已接线）
 - [x] **字幕历史面板 + 一键复制 / 导出 srt/txt**（emit 自动记录，退出 atexit 落盘 `subtitle_session.txt/.srt`，2026-09-24 实测）
-- [ ] 整篇阅读模式（段落重排、可读性版式）
+- [x] **整篇阅读模式（段落重排、可读性版式）**（`read_doc.py`：空行分段 + 长段句读打包，2026-09-24 实测；stdout 流式推壳）
 
 ### M3 — 屏幕文字翻译
 - [x] **OCR 抓屏翻译**（`demo_ocr.py`：RapidOCR 离线；全屏/区域/`--img` 图片三模式，2026-09-24 合成图 + 真实屏实测通过，复用 emit 字幕/历史/导出链路）
 - [x] **阅读模式（整篇文档双语对照）**（`read_doc.py`：空行分段 + 长段句读打包，输出 `.bilingual.txt`，2026-09-24 实测）
-- [ ] OCR 与字幕悬浮窗共存交互（Tauri 壳）
+- [ ] 🔄 OCR 与字幕悬浮窗共存交互（Tauri 壳）——2026-09-24 圈选OCR 按钮已进壳（`start_ocr`→`--select`），待实跑验证
 
 ### M4 — 分发体验
 - [ ] 安装包全量化：模型/管线随包分发或首启按需下载（当前 1.68MB 壳仅指向本机 `SIMUL_PYTHON`）
 - [ ] 语对包管理界面（已装/未装/下载进度）
 
 ### M5 — 跨平台
-- [ ] 三平台 CI 矩阵（Windows/macOS/Linux，tag → 同一 Release 挂三份包）
-- [ ] macOS 本地验证
-- [ ] Linux 本地验证
+- [x] **三平台 CI 矩阵**（Windows/macOS/Linux，tag → 同一 Release 挂三份包）——2026-09-24 run 35999279633 全绿：nsis 2m06s / dmg 3m57s / deb+AppImage 4m39s，artifact 全挂；坑：`bundle.targets:["nsis"]` 在 mac/Linux 被静默跳过 → 改 `--bundles` 按平台指定
+- [ ] macOS 产物验证（artifact 已可下载）
+- [ ] Linux 产物验证（deb/AppImage 已可下载）
 - [ ] 移动端 → 见 M6
 
 ## 每日推进规则
