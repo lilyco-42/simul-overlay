@@ -1,0 +1,13 @@
+# 运行时资产（不入库，README 说明如何下载）
+.venv/
+models/
+*.wav
+*.mp4
+__pycache__/
+*.pyc
+
+# Tauri / Rust 构建产物
+app/src-tauri/target/
+
+# 参考克隆仓库（仅本地研究用）
+_research/
