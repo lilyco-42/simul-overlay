@@ -28,7 +28,7 @@
 - [ ] NMT 移动端选型：Bergamot C++（首选，OPUS 同源）vs llama.cpp 小模型 vs API 过渡
 - [ ] 壳选型：Tauri 2 Android vs 官方 sherpa-onnx Flutter 插件（spike 先原生 Java 直连 AAR 验证链路，壳选型后置）
 - [ ] **区域截屏→OCR→中文** 移动端实现（MediaProjection + ONNX OCR，天然可跨）
-- [ ] 🔄 CI：GitHub Actions 出 APK 挂同一 Release——2026-09-24 拍板**多 APK 按母语分渠道**：cn/en 双 flavor（id 后缀可并存 + `BuildConfig.DEFAULT_TARGET` 预留 NMT 目标语种）；**语对包离线可拷贝扩展**（外置目录扫描导入，NMT 落地时实现）；flavor 构建待 CI 验证
+- [x] CI：GitHub Actions 出 APK——2026-09-24 拍板**多 APK 按母语分渠道**：cn/en 双 flavor（id 后缀可并存 + `BuildConfig.DEFAULT_TARGET` 预留 NMT 目标语种）；**语对包离线可拷贝扩展**（外置目录扫描导入，NMT 落地时实现）；run 36003501308 全绿（android 3m7s 双 flavor + 三平台），坑：gradlew 缺执行位 exit 126 → git mode 100755 修复；**挂同一 Release 待 tag v0.2.0 实测**
 
 ### M0 — 原型闭环 ✅（2026-09-24）
 - [x] 文件管线验证（wav → ASR → 离线NMT → 双语字幕，纯离线）
@@ -64,6 +64,7 @@
 ### M4 — 分发体验（2026-09-24 用户拍板：**离线可用全量包**）
 - [ ] 🔄 安装包全量化：模型/管线/核心语对**随包分发**（明确非首启下载）——路径：PyInstaller 打 Python 管线侧车 + 模型进 Tauri resources + CI 全量进 NSIS/dmg/deb，tag → Release 挂离线全量包（当前 1.68MB 壳仅指向本机 `SIMUL_PYTHON`，不满足）
   - 2026-09-24 定案：pipeline 写死路径已改三级解析（`SIMUL_MODEL_DIR` → frozen `_MEIPASS/models` → 仓库 `models/`）；Argos 语对靠 `ARGOS_PACKAGES_DIR` env 重定向随包目录；**首发核心 6 对 = zh↔en(166MB) + ja↔en(258MB) + ko↔en(258MB) ≈ 682MB**，其余语对留 `ensure_pair` 联网补装（全量 24 对 2.76GB 不随包）；PyInstaller 统一入口 `simul_pipe.py`（system/mic/ocr/read 子命令）已就位
+  - 2026-09-24 进展：PyInstaller onedir **首打成功 403.6MB**（torch 109 + spacy 84 随 argos→stanza 链进包，实测翻译运行时真实加载 torch+stanza+spacy，暂不可 exclude）；首跑踩 runpy 动态 import 盲区（`translate_engine` 未进 PYZ）→ `simul_pipe` 加 frozen 锚点修复中；待办：exe 实测 → 核心 6 对语对布局 → Tauri resources 接入 → CI Windows job 加 PyInstaller 步骤
 - [ ] 语对包管理界面（已装/未装/下载进度）
 
 ### M5 — 跨平台

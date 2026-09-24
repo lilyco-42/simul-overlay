@@ -14,6 +14,15 @@ import os
 import runpy
 import sys
 
+# —— PyInstaller 静态分析锚点 ——
+# 四个子命令脚本经 runpy 动态执行，分析器从本文件出发看不到它们的 import 链；
+# 显式 import 项目内纯模块确保收进 PYZ（frozen 下外挂脚本 from ... import 才能找到）。
+# 只锚模块型文件：demo_* 是顶层直跑脚本，import 即执行，绝不能在此 import。
+if getattr(sys, "frozen", False):
+    import pipeline  # noqa: F401
+    import translate_engine  # noqa: F401
+    import tts_engine  # noqa: F401
+
 CMD = {
     "system": "demo_system.py",
     "mic": "demo_mic.py",
