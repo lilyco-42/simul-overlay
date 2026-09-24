@@ -20,7 +20,7 @@ import urllib.request
 
 from argostranslate import package, settings, translate as argos
 
-_lock = threading.Lock()
+_lock = threading.RLock()  # ensure_pair 在持锁内会再调 installed_pairs()，必须可重入
 _pairs = None  # set[(from,to)] 已安装语对缓存
 
 _UA = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"}
@@ -33,6 +33,7 @@ def _download_pkg(pkg):
     随后回落 ipfs:// 链接无限挂起。这里只走 https 链接 + 浏览器 UA + 超时。
     """
     fname = f"translate-{pkg.from_code}_{pkg.to_code}-{pkg.package_version}.argosmodel"
+    print(f"[dl] start {fname} ...", flush=True)
     dest = settings.downloads_dir / fname
     dest.parent.mkdir(parents=True, exist_ok=True)
     if dest.exists() and dest.stat().st_size > 0:
