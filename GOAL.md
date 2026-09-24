@@ -24,9 +24,9 @@
 ## 里程碑
 
 ### M6 — 安卓 / 移动端（2026-09-24 立项，用户确认跨平台诉求）
-- [ ] spike：sherpa-onnx AAR 真机跑通 VAD+ASR（本机工具链已齐：adb/JDK17+21/gradle/Android SDK）
+- [ ] 🔄 spike：sherpa-onnx AAR 真机跑通 VAD+ASR（本机工具链已齐：adb/JDK17+21/gradle/Android SDK）——2026-09-24 工程骨架完成（`android/`：原生 Java + JitPack AAR v1.13.8 与桌面同版、中英双语流式 zipformer endpoint 断句、模型 assets 首启幂等拷贝、`fetch_model.py` 拉 75MB 模型），本地 `assembleDebug` 构建中；真机未连接（`adb devices` 空，待插手机开 USB 调试）
 - [ ] NMT 移动端选型：Bergamot C++（首选，OPUS 同源）vs llama.cpp 小模型 vs API 过渡
-- [ ] 壳选型：Tauri 2 Android vs 官方 sherpa-onnx Flutter 插件
+- [ ] 壳选型：Tauri 2 Android vs 官方 sherpa-onnx Flutter 插件（spike 先原生 Java 直连 AAR 验证链路，壳选型后置）
 - [ ] **区域截屏→OCR→中文** 移动端实现（MediaProjection + ONNX OCR，天然可跨）
 - [ ] CI：GitHub Actions 出 APK 挂同一 Release
 
@@ -44,7 +44,7 @@
 - [x] **22 个语对包安装完成 + pivot 路由实测**（2026-09-24：24 对装机；zh→ja/ko→zh/de→fr/ru→zh 两跳与 ar→en 直连全通过）
 - [x] **WASAPI loopback 系统声音捕获**（`demo_system.py`，实测通过 2026-09-24：48k 立体声 loopback → 16k 单声道 → 全管线字幕输出）
 - [ ] 麦克风实测（⚠️ Blocked：等用户检查系统麦克风权限后跑 `demo_mic.py 60`）
-- [ ] 🔄 多音源选择 UI（麦克风 / 系统声音已进壳，指定应用待做）——2026-09-24 四合一控制条代码完成，待实跑验证
+- [ ] 🔄 多音源选择 UI（麦克风 / 系统声音已进壳，指定应用待做）——2026-09-24 四合一控制条代码完成并过三平台 CI（run 36001487105 全绿：mac 1m38s / win 2m13s / linux 3m29s），待本地实跑验证
 
 #### M1 途中修复的坑（2026-09-24）
 - [x] Argos 语对下载 403：argos-net.com 拒 Python 默认 UA → 浏览器 UA + 只走 https（ipfs 回落会无限挂起）
@@ -67,8 +67,8 @@
 
 ### M5 — 跨平台
 - [x] **三平台 CI 矩阵**（Windows/macOS/Linux，tag → 同一 Release 挂三份包）——2026-09-24 run 35999279633 全绿：nsis 2m06s / dmg 3m57s / deb+AppImage 4m39s，artifact 全挂；坑：`bundle.targets:["nsis"]` 在 mac/Linux 被静默跳过 → 改 `--bundles` 按平台指定
-- [ ] macOS 产物验证（artifact 已可下载）
-- [ ] Linux 产物验证（deb/AppImage 已可下载）
+- [ ] 🔄 macOS 产物验证——2026-09-24 artifact 真实下载校验通过（dmg 2.4MB，未过期），待目标系统实际安装运行
+- [ ] 🔄 Linux 产物验证——2026-09-24 artifact 真实下载校验通过（deb+AppImage 179MB，未过期），待目标系统实际安装运行
 - [ ] 移动端 → 见 M6
 
 ## 每日推进规则
