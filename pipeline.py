@@ -1,6 +1,10 @@
 # -*- coding: utf-8 -*-
 """同传管线核心模块（原子单元）：音频流 → sherpa-onnx 流式ASR → Argos离线NMT → 双语字幕行"""
+import os
+import queue
 import re
+import threading
+
 import numpy as np
 import sherpa_onnx
 
@@ -145,6 +149,38 @@ def translate_line(text: str) -> str:
         return f"[NMT error: {e}]"
 
 
+def _speak_worker():
+    """单工作线程：串行合成+播放，避免多条译文语音重叠。"""
+    import sounddevice as sd
+    from tts_engine import synthesize
+    while True:
+        item = _speak_q.get()
+        if item is None:
+            break
+        text, lang = item
+        try:
+            samples, sr = synthesize(text, lang)
+            sd.play(samples, sr)
+            sd.wait()
+        except Exception:
+            pass  # 朗读失败绝不影响字幕
+
+
+_speak_q = None
+
+
+def speak_async(text, lang):
+    """后台线程朗读（SIMUL_TTS=1 时启用）；队列满即丢弃，实时性优先。"""
+    global _speak_q
+    if _speak_q is None:
+        _speak_q = queue.Queue(maxsize=4)
+        threading.Thread(target=_speak_worker, daemon=True).start()
+    try:
+        _speak_q.put_nowait((text, lang))
+    except queue.Full:
+        pass
+
+
 def emit(source: str):
     """产出一行双语字幕"""
     source = cleanup_text(source).strip()
@@ -154,3 +190,6 @@ def emit(source: str):
     print(f"  {source}", flush=True)
     print(f"→ {target}", flush=True)
     print("-" * 48, flush=True)
+    if os.environ.get("SIMUL_TTS") == "1" and target and not target.startswith("["):
+        src_lang = detect_lang(source)
+        speak_async(target, "en" if src_lang == "zh" else "zh")
