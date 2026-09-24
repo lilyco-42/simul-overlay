@@ -173,6 +173,7 @@ def translate(text, src=None, dst=None):
     if src == dst:
         return text
     dst = dst or ("en" if src == "zh" else "zh")
+    dst = os.environ.get("SIMUL_TARGET_LANG") or dst  # 显式目标语种开关（如恒翻中文: zh）
 
     if os.environ.get("SIMUL_FORCE_OFFLINE") != "1":
         try:

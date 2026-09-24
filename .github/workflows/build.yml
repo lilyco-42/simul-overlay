@@ -1,4 +1,4 @@
-name: build-windows
+name: build
 
 permissions:
   contents: write  # tauri-action 创建 Release 并上传安装包需要
@@ -10,14 +10,38 @@ on:
   workflow_dispatch:
 
 jobs:
-  tauri:
-    runs-on: windows-latest
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            asset: windows-nsis-installer
+            bundles: app/src-tauri/target/release/bundle/nsis/*
+          - os: macos-latest
+            asset: macos-bundles
+            bundles: |
+              app/src-tauri/target/release/bundle/dmg/*
+              app/src-tauri/target/release/bundle/macos/*
+          - os: ubuntu-latest
+            asset: linux-bundles
+            bundles: |
+              app/src-tauri/target/release/bundle/deb/*
+              app/src-tauri/target/release/bundle/appimage/*
+    runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
 
       - uses: actions/setup-node@v4
         with:
           node-version: 22
+
+      - name: Install Linux system deps
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y webkit2gtk-4.1 libwebkit2gtk-4.1-dev build-essential \
+            curl wget file libxdo-dev libssl-dev libayatana-appindicator3-dev librsvg2-dev
 
       - uses: dtolnay/rust-toolchain@stable
 
@@ -31,15 +55,16 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          # tag 推送时自动创建 GitHub Release 并挂载安装包；分支推送仅构建
+          # tag 推送时自动创建 GitHub Release 并挂载安装包（三平台往同一 Release 上传）；
+          # 分支推送仅构建 artifact
           tagName: ${{ github.ref_type == 'tag' && github.ref_name || '' }}
-          releaseName: simul-overlay ${{ github.ref_name }}
+          releaseName: simul-overlay ${{ github.ref_type == 'tag' && github.ref_name || '' }}
           releaseDraft: false
           prerelease: ${{ github.ref_type != 'tag' }}
 
-      - name: Upload NSIS installer
+      - name: Upload bundles
         uses: actions/upload-artifact@v4
         with:
-          name: windows-nsis-installer
-          path: app/src-tauri/target/release/bundle/nsis/*.exe
+          name: ${{ matrix.asset }}
+          path: ${{ matrix.bundles }}
           if-no-files-found: error

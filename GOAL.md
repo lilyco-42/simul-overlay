@@ -23,6 +23,13 @@
 
 ## 里程碑
 
+### M6 — 安卓 / 移动端（2026-09-24 立项，用户确认跨平台诉求）
+- [ ] spike：sherpa-onnx AAR 真机跑通 VAD+ASR（本机工具链已齐：adb/JDK17+21/gradle/Android SDK）
+- [ ] NMT 移动端选型：Bergamot C++（首选，OPUS 同源）vs llama.cpp 小模型 vs API 过渡
+- [ ] 壳选型：Tauri 2 Android vs 官方 sherpa-onnx Flutter 插件
+- [ ] **区域截屏→OCR→中文** 移动端实现（MediaProjection + ONNX OCR，天然可跨）
+- [ ] CI：GitHub Actions 出 APK 挂同一 Release
+
 ### M0 — 原型闭环 ✅（2026-09-24）
 - [x] 文件管线验证（wav → ASR → 离线NMT → 双语字幕，纯离线）
 - [x] 视频端到端验证 + VAD 门控（8.9x 实时）+ 文本清洗
@@ -59,9 +66,10 @@
 - [ ] 语对包管理界面（已装/未装/下载进度）
 
 ### M5 — 跨平台
-- [ ] macOS 构建（GitHub Actions matrix）
-- [ ] Linux 构建（AppImage/deb）
-- [ ] 移动端评估（Android/iOS 路线）
+- [ ] 三平台 CI 矩阵（Windows/macOS/Linux，tag → 同一 Release 挂三份包）
+- [ ] macOS 本地验证
+- [ ] Linux 本地验证
+- [ ] 移动端 → 见 M6
 
 ## 每日推进规则
 
