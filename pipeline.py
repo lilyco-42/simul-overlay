@@ -3,7 +3,8 @@
 import re
 import numpy as np
 import sherpa_onnx
-from argostranslate import translate as argos
+
+from translate_engine import translate as engine_translate, detect_lang as engine_detect
 
 MODEL_DIR = "D:/Code/simul-demo/models/sherpa-onnx-streaming-zipformer-bilingual-zh-en-2023-02-20"
 
@@ -130,16 +131,16 @@ def cleanup_text(text: str) -> str:
 
 
 def detect_lang(text: str) -> str:
-    return "zh" if re.search(r"[一-鿿]", text) else "en"
+    return engine_detect(text)
 
 
 def translate_line(text: str) -> str:
-    """离线双向翻译：中文→英文 / 英文→中文"""
+    """翻译：走引擎层（本地离线为主 / API 可选，缺语对自动 pivot 路由）"""
     text = cleanup_text(text)
-    src = detect_lang(text)
-    dst = "en" if src == "zh" else "zh"
+    if not text.strip():
+        return ""
     try:
-        return argos.translate(text, src, dst)
+        return engine_translate(text)
     except Exception as e:  # 翻译失败不阻塞字幕
         return f"[NMT error: {e}]"
 

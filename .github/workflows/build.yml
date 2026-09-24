@@ -2,6 +2,8 @@ name: build-windows
 
 on:
   push:
+    branches: [main]
+    tags: ["v*"]
   workflow_dispatch:
 
 jobs:
@@ -20,6 +22,12 @@ jobs:
         uses: tauri-apps/tauri-action@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          # tag 推送时自动创建 GitHub Release 并挂载安装包；分支推送仅构建
+          tagName: ${{ github.ref_type == 'tag' && github.ref_name || '' }}
+          releaseName: simul-overlay ${{ github.ref_name }}
+          releaseDraft: false
+          prerelease: ${{ github.ref_type != 'tag' }}
 
       - name: Upload NSIS installer
         uses: actions/upload-artifact@v4
