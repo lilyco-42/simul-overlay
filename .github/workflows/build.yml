@@ -11,20 +11,24 @@ on:
 
 jobs:
   build:
+    name: build (${{ matrix.asset }})
     strategy:
       fail-fast: false
       matrix:
         include:
           - os: windows-latest
             asset: windows-nsis-installer
+            build_args: --bundles nsis
             bundles: app/src-tauri/target/release/bundle/nsis/*
           - os: macos-latest
             asset: macos-bundles
+            build_args: --bundles dmg
             bundles: |
               app/src-tauri/target/release/bundle/dmg/*
               app/src-tauri/target/release/bundle/macos/*
           - os: ubuntu-latest
             asset: linux-bundles
+            build_args: --bundles deb,appimage
             bundles: |
               app/src-tauri/target/release/bundle/deb/*
               app/src-tauri/target/release/bundle/appimage/*
@@ -61,6 +65,7 @@ jobs:
           releaseName: simul-overlay ${{ github.ref_type == 'tag' && github.ref_name || '' }}
           releaseDraft: false
           prerelease: ${{ github.ref_type != 'tag' }}
+          args: ${{ matrix.build_args }}
 
       - name: Upload bundles
         uses: actions/upload-artifact@v4
