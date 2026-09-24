@@ -4,6 +4,8 @@ import os
 import queue
 import re
 import threading
+import atexit
+import time
 
 import numpy as np
 import sherpa_onnx
@@ -181,6 +183,35 @@ def speak_async(text, lang):
         pass
 
 
+_HISTORY = []  # [(epoch_t, source, target)]
+
+
+def _ts(t: float) -> str:
+    lt = time.localtime(t)
+    return f"{lt.tm_hour:02d}:{lt.tm_min:02d}:{lt.tm_sec:02d},{int((t - int(t)) * 1000):03d}"
+
+
+def export_history(base="subtitle_session"):
+    """导出字幕历史：base.txt（可复制阅读）+ base.srt（标准字幕）。"""
+    if not _HISTORY:
+        return
+    try:
+        with open(f"{base}.txt", "w", encoding="utf-8") as f:
+            for _, s, d in _HISTORY:
+                f.write(f"{s}\n→ {d}\n\n")
+        with open(f"{base}.srt", "w", encoding="utf-8") as f:
+            n = len(_HISTORY)
+            for i, (t, s, d) in enumerate(_HISTORY):
+                end = _HISTORY[i + 1][0] if i + 1 < n else t + 3.0
+                f.write(f"{i + 1}\n{_ts(t)} --> {_ts(end)}\n{s}\n{d}\n\n")
+        print(f"[export] {base}.txt / {base}.srt （{n} 条）", flush=True)
+    except Exception:
+        pass  # 导出失败不影响会话
+
+
+atexit.register(export_history)
+
+
 def emit(source: str):
     """产出一行双语字幕"""
     source = cleanup_text(source).strip()
@@ -190,6 +221,7 @@ def emit(source: str):
     print(f"  {source}", flush=True)
     print(f"→ {target}", flush=True)
     print("-" * 48, flush=True)
+    _HISTORY.append((time.time(), source, target))
     if os.environ.get("SIMUL_TTS") == "1" and target and not target.startswith("["):
         src_lang = detect_lang(source)
         speak_async(target, "en" if src_lang == "zh" else "zh")

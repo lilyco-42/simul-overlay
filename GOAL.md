@@ -34,7 +34,7 @@
 - [x] Release v0.1.0 发布：https://github.com/lilyco-42/simul-overlay/releases/tag/v0.1.0
 
 ### M1 — 输入面扩展（进行中）
-- [ ] 22 个语对包安装完成 + pivot 路由实测（zh→ja = zh→en→ja）🔄 批量安装后台跑着
+- [x] **22 个语对包安装完成 + pivot 路由实测**（2026-09-24：24 对装机；zh→ja/ko→zh/de→fr/ru→zh 两跳与 ar→en 直连全通过）
 - [x] **WASAPI loopback 系统声音捕获**（`demo_system.py`，实测通过 2026-09-24：48k 立体声 loopback → 16k 单声道 → 全管线字幕输出）
 - [ ] 麦克风实测（⚠️ Blocked：等用户检查系统麦克风权限后跑 `demo_mic.py 60`）
 - [ ] 多音源选择 UI（麦克风 / 系统声音 / 指定应用）
@@ -46,7 +46,7 @@
 ### M2 — 输出面补全
 - [x] **TTS 朗读译文**（`tts_engine.py`，sherpa-onnx OfflineTts + Kokoro multi-lang v1.0，310MB/24kHz，en/zh/ja/es/fr/it/pt 七语种；2026-09-24 英中双句实测合成+播放通过，其余语种英文音色兜底）
 - [ ] TTS 接入字幕管线（每条译文可选朗读）
-- [ ] 字幕历史面板 + 一键复制 / 导出 srt/txt
+- [x] **字幕历史面板 + 一键复制 / 导出 srt/txt**（emit 自动记录，退出 atexit 落盘 `subtitle_session.txt/.srt`，2026-09-24 实测）
 - [ ] 整篇阅读模式（段落重排、可读性版式）
 
 ### M3 — 屏幕文字翻译
