@@ -1,0 +1,8 @@
+// Top-level build file (Android spike - sherpa-onnx AAR via JitPack)
+plugins {
+    id 'com.android.application' version '8.7.3' apply false
+}
+
+task clean(type: Delete) {
+    delete rootProject.buildDir
+}

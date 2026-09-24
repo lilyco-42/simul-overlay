@@ -73,3 +73,37 @@ jobs:
           name: ${{ matrix.asset }}
           path: ${{ matrix.bundles }}
           if-no-files-found: error
+
+  android:
+    name: android-apk
+    needs: build  # tag 时等 tauri-action 先建好 Release，APK 才能挂上去
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      - name: Fetch ASR model into assets (offline-bundled, pruned)
+        run: python3 android/fetch_model.py
+
+      - name: Build APK
+        working-directory: android
+        run: ./gradlew assembleDebug --no-daemon
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-apk
+          path: android/app/build/outputs/apk/debug/*.apk
+          if-no-files-found: error
+
+      - name: Attach APK to release (tags only)
+        if: github.ref_type == 'tag'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh release upload "${{ github.ref_name }}" android/app/build/outputs/apk/debug/*.apk --clobber

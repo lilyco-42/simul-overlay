@@ -3,16 +3,35 @@
 import os
 import queue
 import re
+import sys
 import threading
 import atexit
 import time
+from pathlib import Path
 
 import numpy as np
 import sherpa_onnx
 
 from translate_engine import translate as engine_translate, detect_lang as engine_detect
 
-MODEL_DIR = "D:/Code/simul-demo/models/sherpa-onnx-streaming-zipformer-bilingual-zh-en-2023-02-20"
+
+def _models_root() -> str:
+    """模型根目录三级解析（M4 离线包关键）：
+    1) SIMUL_MODEL_DIR 环境变量（壳/安装器可指到任意位置）
+    2) PyInstaller frozen → _MEIPASS/models（随包分发）
+    3) 开发模式 → 仓库 models/ 目录
+    """
+    env = os.environ.get("SIMUL_MODEL_DIR")
+    if env:
+        return env
+    if getattr(sys, "frozen", False):
+        return os.path.join(sys._MEIPASS, "models")
+    return str(Path(__file__).resolve().parent / "models")
+
+
+MODELS_ROOT = _models_root()
+MODEL_DIR = os.environ.get("SIMUL_ASR_DIR") or os.path.join(
+    MODELS_ROOT, "sherpa-onnx-streaming-zipformer-bilingual-zh-en-2023-02-20")
 
 
 def build_recognizer():
@@ -37,7 +56,7 @@ def feed(recognizer, stream, samples):
         recognizer.decode_stream(stream)
 
 
-VAD_PATH = "D:/Code/simul-demo/models/silero_vad.onnx"
+VAD_PATH = os.path.join(MODELS_ROOT, "silero_vad.onnx")
 
 
 def build_vad(threshold=0.5):
