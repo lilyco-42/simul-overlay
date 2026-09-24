@@ -21,6 +21,11 @@ jobs:
 
       - uses: dtolnay/rust-toolchain@stable
 
+      - name: Cache Rust dependencies
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: app/src-tauri
+
       - name: Build Tauri app
         uses: tauri-apps/tauri-action@v1
         env:
