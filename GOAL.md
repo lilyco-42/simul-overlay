@@ -44,7 +44,8 @@
 - [x] `ensure_pair` 死锁：持 `Lock` 内重入 `installed_pairs()` → 改 `RLock`（此前所有下载路径必卡死）
 
 ### M2 — 输出面补全
-- [ ] TTS 朗读译文（sherpa-onnx offline TTS，反向语音输出）
+- [x] **TTS 朗读译文**（`tts_engine.py`，sherpa-onnx OfflineTts + Kokoro multi-lang v1.0，310MB/24kHz，en/zh/ja/es/fr/it/pt 七语种；2026-09-24 英中双句实测合成+播放通过，其余语种英文音色兜底）
+- [ ] TTS 接入字幕管线（每条译文可选朗读）
 - [ ] 字幕历史面板 + 一键复制 / 导出 srt/txt
 - [ ] 整篇阅读模式（段落重排、可读性版式）
 
