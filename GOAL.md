@@ -34,10 +34,14 @@
 - [x] Release v0.1.0 发布：https://github.com/lilyco-42/simul-overlay/releases/tag/v0.1.0
 
 ### M1 — 输入面扩展（进行中）
-- [ ] 22 个语对包安装完成 + pivot 路由实测（zh→ja = zh→en→ja）
-- [ ] **WASAPI loopback 系统声音捕获**（游戏/视频无需麦克风，直接抓系统音频）
-- [ ] 麦克风实测（Blocked：等用户检查系统麦克风权限后跑 `demo_mic.py 60`）
+- [ ] 22 个语对包安装完成 + pivot 路由实测（zh→ja = zh→en→ja）🔄 批量安装后台跑着
+- [x] **WASAPI loopback 系统声音捕获**（`demo_system.py`，实测通过 2026-09-24：48k 立体声 loopback → 16k 单声道 → 全管线字幕输出）
+- [ ] 麦克风实测（⚠️ Blocked：等用户检查系统麦克风权限后跑 `demo_mic.py 60`）
 - [ ] 多音源选择 UI（麦克风 / 系统声音 / 指定应用）
+
+#### M1 途中修复的坑（2026-09-24）
+- [x] Argos 语对下载 403：argos-net.com 拒 Python 默认 UA → 浏览器 UA + 只走 https（ipfs 回落会无限挂起）
+- [x] `ensure_pair` 死锁：持 `Lock` 内重入 `installed_pairs()` → 改 `RLock`（此前所有下载路径必卡死）
 
 ### M2 — 输出面补全
 - [ ] TTS 朗读译文（sherpa-onnx offline TTS，反向语音输出）
