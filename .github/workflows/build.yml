@@ -1,5 +1,8 @@
 name: build-windows
 
+permissions:
+  contents: write  # tauri-action 创建 Release 并上传安装包需要
+
 on:
   push:
     branches: [main]
