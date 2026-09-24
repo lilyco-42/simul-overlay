@@ -28,7 +28,7 @@
 - [ ] NMT 移动端选型：Bergamot C++（首选，OPUS 同源）vs llama.cpp 小模型 vs API 过渡
 - [ ] 壳选型：Tauri 2 Android vs 官方 sherpa-onnx Flutter 插件（spike 先原生 Java 直连 AAR 验证链路，壳选型后置）
 - [ ] **区域截屏→OCR→中文** 移动端实现（MediaProjection + ONNX OCR，天然可跨）
-- [x] CI：GitHub Actions 出 APK——2026-09-24 拍板**多 APK 按母语分渠道**：cn/en 双 flavor（id 后缀可并存 + `BuildConfig.DEFAULT_TARGET` 预留 NMT 目标语种）；**语对包离线可拷贝扩展**（外置目录扫描导入，NMT 落地时实现）；run 36003501308 全绿（android 3m7s 双 flavor + 三平台），坑：gradlew 缺执行位 exit 126 → git mode 100755 修复；**挂同一 Release 待 tag v0.2.0 实测**
+- [x] CI：GitHub Actions 出 APK——2026-09-24 拍板**多 APK 按母语分渠道**：cn/en 双 flavor（id 后缀可并存 + `BuildConfig.DEFAULT_TARGET` 预留 NMT 目标语种）；**语对包离线可拷贝扩展**（外置目录扫描导入，NMT 落地时实现）；run 36003501308 全绿（android 3m7s 双 flavor + 三平台），坑：gradlew 缺执行位 exit 126 → git mode 100755 修复；**已挂 v0.2.0 Release（2026-09-24：Windows NSIS 全量 + mac/linux 轻包 + 双 flavor APK 同挂），待真机实测**
 
 ### M0 — 原型闭环 ✅（2026-09-24）
 - [x] 文件管线验证（wav → ASR → 离线NMT → 双语字幕，纯离线）
@@ -64,7 +64,7 @@
 ### M4 — 分发体验（2026-09-24 用户拍板：**离线可用全量包**）
 - [ ] 🔄 安装包全量化：模型/管线/核心语对**随包分发**（明确非首启下载）——路径：PyInstaller 打 Python 管线侧车 + 模型进 Tauri resources + CI 全量进 NSIS/dmg/deb，tag → Release 挂离线全量包（当前 1.68MB 壳仅指向本机 `SIMUL_PYTHON`，不满足）
   - 2026-09-24 定案：pipeline 写死路径已改三级解析（`SIMUL_MODEL_DIR` → frozen `_MEIPASS/models` → 仓库 `models/`）；Argos 语对靠 `ARGOS_PACKAGES_DIR` env 重定向随包目录；**首发核心 6 对 = zh↔en(166MB) + ja↔en(258MB) + ko↔en(258MB) ≈ 682MB**，其余语对留 `ensure_pair` 联网补装（全量 24 对 2.76GB 不随包）；PyInstaller 统一入口 `simul_pipe.py`（system/mic/ocr/read 子命令）已就位
-  - 2026-09-24 进展：PyInstaller onedir **首打成功 403.6MB**（torch 109 + spacy 84 随 argos→stanza 链进包，实测翻译运行时真实加载 torch+stanza+spacy，暂不可 exclude）；runpy 动态 import 盲区已修（frozen 锚点，`demo_*` 顶层直跑不能 import 只锚纯模块）；**exe 实测通过**（frozen `read` + `ARGOS_PACKAGES_DIR` 随包六对 → en→ja 日文输出 rc=0）；`fetch_models.py`（ASR/VAD/TTS/argos 幂等拉取；VAD 挂 **asr-models** tag 非 vad-models）+ `requirements.txt` 就绪；核心 6 对已布局 `models/argos-packages`（682.1MB）；**Tauri 打包模式完成**（main.rs 运行时探测 resource_dir 下侧车 → 注入 `SIMUL_MODEL_DIR`/`ARGOS_PACKAGES_DIR`，无侧车回退开发模式，cargo check 绿；tauri.conf `resources/*` + `build_sidecar.py` 跨平台脚本 + CI Windows job 五步 `with_sidecar` 开关——torch 须先 CPU index 防 CUDA 膨胀）；待办：CI 全链验证 → tag v0.2.0（Windows NSIS 全量首发，mac/linux 轻包后补全量）
+  - 2026-09-24 进展：PyInstaller onedir **首打成功 403.6MB**（torch 109 + spacy 84 随 argos→stanza 链进包，实测翻译运行时真实加载 torch+stanza+spacy，暂不可 exclude）；runpy 动态 import 盲区已修（frozen 锚点，`demo_*` 顶层直跑不能 import 只锚纯模块）；**exe 实测通过**（frozen `read` + `ARGOS_PACKAGES_DIR` 随包六对 → en→ja 日文输出 rc=0）；`fetch_models.py`（ASR/VAD/TTS/argos 幂等拉取；VAD 挂 **asr-models** tag 非 vad-models）+ `requirements.txt` 就绪；核心 6 对已布局 `models/argos-packages`（682.1MB）；**Tauri 打包模式完成**（main.rs 运行时探测 resource_dir 下侧车 → 注入 `SIMUL_MODEL_DIR`/`ARGOS_PACKAGES_DIR`，无侧车回退开发模式，cargo check 绿；tauri.conf `resources/*` + `build_sidecar.py` 跨平台脚本 + CI Windows job 五步 `with_sidecar` 开关——torch 须先 CPU index 防 CUDA 膨胀）；**2026-09-24 CI 全链验证 ✅（run 36006855792 全绿：Windows NSIS 全量 8m46s 五步全过 + mac 2m9s / linux 2m24s 轻包 + android 双 APK 2m17s）→ tag v0.2.0 出 Release（Windows NSIS 全量 + mac/linux 轻包 + cn/en 双母语 APK 同挂）**；后续：mac/linux `with_sidecar` 补全量
 - [ ] 语对包管理界面（已装/未装/下载进度）
 
 ### M5 — 跨平台
