@@ -1,0 +1,10 @@
+# 桌面离线管线（simul-pipe 侧车）依赖；CI/本地 pip install -r 即可。
+# argostranslate 会连带 ctranslate2/sentencepiece/spacy/stanza（运行时真实加载，勿手动剔除）。
+sherpa-onnx>=1.10
+argostranslate>=1.9
+rapidocr-onnxruntime
+pyaudiowpatch
+onnxruntime
+numpy
+sounddevice
+pyinstaller>=6.0

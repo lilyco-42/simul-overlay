@@ -64,7 +64,7 @@
 ### M4 — 分发体验（2026-09-24 用户拍板：**离线可用全量包**）
 - [ ] 🔄 安装包全量化：模型/管线/核心语对**随包分发**（明确非首启下载）——路径：PyInstaller 打 Python 管线侧车 + 模型进 Tauri resources + CI 全量进 NSIS/dmg/deb，tag → Release 挂离线全量包（当前 1.68MB 壳仅指向本机 `SIMUL_PYTHON`，不满足）
   - 2026-09-24 定案：pipeline 写死路径已改三级解析（`SIMUL_MODEL_DIR` → frozen `_MEIPASS/models` → 仓库 `models/`）；Argos 语对靠 `ARGOS_PACKAGES_DIR` env 重定向随包目录；**首发核心 6 对 = zh↔en(166MB) + ja↔en(258MB) + ko↔en(258MB) ≈ 682MB**，其余语对留 `ensure_pair` 联网补装（全量 24 对 2.76GB 不随包）；PyInstaller 统一入口 `simul_pipe.py`（system/mic/ocr/read 子命令）已就位
-  - 2026-09-24 进展：PyInstaller onedir **首打成功 403.6MB**（torch 109 + spacy 84 随 argos→stanza 链进包，实测翻译运行时真实加载 torch+stanza+spacy，暂不可 exclude）；首跑踩 runpy 动态 import 盲区（`translate_engine` 未进 PYZ）→ `simul_pipe` 加 frozen 锚点修复中；待办：exe 实测 → 核心 6 对语对布局 → Tauri resources 接入 → CI Windows job 加 PyInstaller 步骤
+  - 2026-09-24 进展：PyInstaller onedir **首打成功 403.6MB**（torch 109 + spacy 84 随 argos→stanza 链进包，实测翻译运行时真实加载 torch+stanza+spacy，暂不可 exclude）；runpy 动态 import 盲区已修（frozen 锚点，`demo_*` 顶层直跑不能 import 只锚纯模块）；**exe 实测通过**（frozen `read` + `ARGOS_PACKAGES_DIR` 随包六对 → en→ja 日文输出 rc=0）；`fetch_models.py`（ASR/VAD/TTS/argos 幂等拉取；VAD 挂 **asr-models** tag 非 vad-models）+ `requirements.txt` 就绪；核心 6 对已布局 `models/argos-packages`（682.1MB）；**Tauri 打包模式完成**（main.rs 运行时探测 resource_dir 下侧车 → 注入 `SIMUL_MODEL_DIR`/`ARGOS_PACKAGES_DIR`，无侧车回退开发模式，cargo check 绿；tauri.conf `resources/*` + `build_sidecar.py` 跨平台脚本 + CI Windows job 五步 `with_sidecar` 开关——torch 须先 CPU index 防 CUDA 膨胀）；待办：CI 全链验证 → tag v0.2.0（Windows NSIS 全量首发，mac/linux 轻包后补全量）
 - [ ] 语对包管理界面（已装/未装/下载进度）
 
 ### M5 — 跨平台

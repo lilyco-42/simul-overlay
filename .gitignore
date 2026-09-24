@@ -11,3 +11,26 @@ app/src-tauri/target/
 
 # 参考克隆仓库（仅本地研究用）
 _research/
+
+# Android spike 构建产物与模型（fetch_model.py 生成）
+android/.gradle/
+android/build/
+android/app/build/
+android/local.properties
+android/.cache/
+android/app/src/main/assets/
+
+# PyInstaller 侧车构建产物（M4，build_sidecar.py 生成）
+/build/
+/dist/
+*.spec
+
+# stage 进 Tauri 的资源拷贝（CI/本地生成；README.txt 随库）
+app/src-tauri/resources/simul-pipe/
+app/src-tauri/resources/models/
+
+# 运行导出与测试残留
+subtitle_session.txt
+subtitle_session.srt
+*.bilingual.txt
+t.txt

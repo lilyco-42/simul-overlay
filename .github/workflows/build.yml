@@ -16,22 +16,26 @@ jobs:
       fail-fast: false
       matrix:
         include:
+          # with_sidecar: M4 离线全量包（Windows 先行；mac/linux 验证 PyInstaller 后跟进）
           - os: windows-latest
             asset: windows-nsis-installer
             build_args: --bundles nsis
             bundles: app/src-tauri/target/release/bundle/nsis/*
+            with_sidecar: true
           - os: macos-latest
             asset: macos-bundles
             build_args: --bundles dmg
             bundles: |
               app/src-tauri/target/release/bundle/dmg/*
               app/src-tauri/target/release/bundle/macos/*
+            with_sidecar: false
           - os: ubuntu-latest
             asset: linux-bundles
             build_args: --bundles deb,appimage
             bundles: |
               app/src-tauri/target/release/bundle/deb/*
               app/src-tauri/target/release/bundle/appimage/*
+            with_sidecar: false
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
@@ -53,6 +57,46 @@ jobs:
         uses: Swatinem/rust-cache@v2
         with:
           workspaces: app/src-tauri
+
+      # ---- M4 离线全量包：Python 管线侧车 + 模型/语对随包 ----
+      - name: Setup Python (sidecar pipeline)
+        if: matrix.with_sidecar
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Cache offline models + lang pairs
+        if: matrix.with_sidecar
+        uses: actions/cache@v4
+        with:
+          path: |
+            models
+            !models/.cache
+          key: offline-models-${{ runner.os }}-v1
+          restore-keys: |
+            offline-models-${{ runner.os }}-
+
+      - name: Install pipeline deps (torch CPU first, avoid CUDA bloat)
+        if: matrix.with_sidecar
+        run: |
+          pip install torch --index-url https://download.pytorch.org/whl/cpu
+          pip install -r requirements.txt
+
+      - name: Fetch offline models + core 6 lang pairs (~1.5GB, cached after 1st run)
+        if: matrix.with_sidecar
+        run: python fetch_models.py
+
+      - name: Build sidecar (PyInstaller onedir)
+        if: matrix.with_sidecar
+        run: python build_sidecar.py
+
+      - name: Stage sidecar + models into Tauri resources
+        if: matrix.with_sidecar
+        shell: bash
+        run: |
+          rm -rf app/src-tauri/resources/simul-pipe app/src-tauri/resources/models
+          cp -r dist/simul-pipe app/src-tauri/resources/simul-pipe
+          cp -r models app/src-tauri/resources/models
 
       - name: Build Tauri app
         uses: tauri-apps/tauri-action@v1
