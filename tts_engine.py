@@ -6,6 +6,7 @@
   python tts_engine.py "要朗读的文本" [语种] [--play]   # 生成 wav，--play 直接播放
   代码内: from tts_engine import speak; speak(text, lang="en")
 """
+import os
 import sys
 import threading
 import wave
@@ -15,7 +16,8 @@ import numpy as np
 
 import sherpa_onnx
 
-MODEL_DIR = Path(__file__).parent / "models" / "tts" / "kokoro-multi-lang-v1_0"
+# M4 离线包：SIMUL_TTS_DIR 可重定向；frozen(__file__→_MEIPASS) 与开发模式同构 models/tts/
+MODEL_DIR = Path(os.environ.get("SIMUL_TTS_DIR") or Path(__file__).parent / "models" / "tts" / "kokoro-multi-lang-v1_0")
 
 # 语种 → 默认音色 sid（kokoro-multi-lang-v1_0，53 speakers；详见 k2-fsa 文档）
 SID = {

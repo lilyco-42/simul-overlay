@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">同传字幕</string>
+    <!-- app_name 由 cn/en 两个 productFlavor 的 resValue 提供（多 APK 按母语分渠道） -->
     <string name="start">▶ 开始同传</string>
     <string name="stop">⏹ 停止</string>
     <string name="init">正在初始化模型…</string>

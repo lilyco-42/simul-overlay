@@ -20,6 +20,30 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
+
+    // 多 APK 按母语分渠道（用户拍板：中文/英文母语各一个包，applicationId 后缀可并存安装）
+    flavorDimensions "target"
+    productFlavors {
+        cn {
+            dimension "target"
+            applicationIdSuffix ".cn"
+            versionNameSuffix "-cn"
+            resValue "string", "app_name", "同传字幕"
+            buildConfigField "String", "DEFAULT_TARGET", "\"zh\""
+        }
+        en {
+            dimension "target"
+            applicationIdSuffix ".en"
+            versionNameSuffix "-en"
+            resValue "string", "app_name", "Simul Overlay"
+            buildConfigField "String", "DEFAULT_TARGET", "\"en\""
+        }
+    }
+
+    buildFeatures {
+        buildConfig true
+    }
+
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_17
         targetCompatibility JavaVersion.VERSION_17
